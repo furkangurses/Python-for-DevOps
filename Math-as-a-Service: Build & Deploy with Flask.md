@@ -244,3 +244,114 @@ Modify existing data
 `id`
 
 Remove data
+
+---
+
+
+## 🗺️ The CRUD Request-Response Cycle
+
+In Flask, every CRUD operation is a specific "conversation" between the browser and your `app.py`.
+
+**Operation**
+
+**Route**
+
+**Method**
+
+**Logic Summary**
+
+**Read**
+
+`/`
+
+`GET`
+
+Pulls the `transactions` list and injects it into `transactions.html`.
+
+**Create**
+
+`/add`
+
+`POST`
+
+Grabs `request.form` data, gives it a new ID, and appends to the list.
+
+**Update**
+
+`/edit/<id>`
+
+`POST`
+
+Finds the specific ID, overwrites the date/amount, and breaks the loop.
+
+**Delete**
+
+`/delete/<id>`
+
+`GET`
+
+Finds the ID and calls `transactions.remove()`.
+
+----------
+
+## 🧪 Practice Exercise Solutions
+
+The practice exercises at the end of the lab are where you really "stress test" your understanding of data filtering and template injection.
+
+### Exercise 1: Search Transactions (Amount Range)
+
+This requires capturing two inputs (`min` and `max`) and returning a subset of your data.
+
+Python
+
+```
+@app.route("/search", methods=["GET", "POST"])
+def search_transactions():
+    if request.method == 'POST':
+        # 1. Capture range from form
+        min_amt = float(request.form.get('min_amount', 0))
+        max_amt = float(request.form.get('max_amount', 1000000))
+
+        # 2. Filter using list comprehension
+        filtered = [t for t in transactions if min_amt <= t['amount'] <= max_amt]
+
+        # 3. Re-use the list template to show results
+        return render_template("transactions.html", transactions=filtered)
+    
+    # Render search.html for GET requests
+    return render_template("search.html")
+
+```
+
+### Exercise 2: Total Balance (Aggregation)
+
+Instead of just listing items, you are performing a calculation across the entire data set.
+
+**In `app.py`:**
+
+Python
+
+```
+@app.route("/balance")
+def total_balance():
+    # Calculate sum of all 'amount' values
+    balance = sum(t['amount'] for t in transactions)
+    
+    # We pass both the list AND the balance to the same template
+    return render_template("transactions.html", transactions=transactions, balance=balance)
+
+```
+
+**In `transactions.html` (Template Adjustment):**
+
+Add this snippet below your table to display the result dynamically:
+
+HTML
+
+```
+{% if balance is defined %}
+    <div style="margin-top: 20px;">
+        <h3>Total Balance: {{ balance }}</h3>
+    </div>
+{% endif %}
+```
